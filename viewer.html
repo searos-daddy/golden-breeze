@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>model viewer</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #8a8f9a; overflow: hidden; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/node_modules/three/build/three.module.js",
+          "three/addons/": "/node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as THREE from 'three';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#8a8f9a');
+
+      const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.01, 100);
+      camera.position.set(1.6, 1.2, 1.8);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      document.body.appendChild(renderer.domElement);
+
+      scene.add(new THREE.HemisphereLight('#ffffff', '#666666', 1.2));
+      const dir = new THREE.DirectionalLight('#ffffff', 2.0);
+      dir.position.set(2, 4, 3);
+      scene.add(dir);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 0.5, 0);
+
+      const file = new URLSearchParams(location.search).get('m') || 'dog_custom.glb';
+      new GLTFLoader().load(`/models/${file}`, (gltf) => {
+        scene.add(gltf.scene);
+        const box = new THREE.Box3().setFromObject(gltf.scene);
+        console.log('bbox', box.min.toArray(), box.max.toArray());
+        gltf.scene.traverse((o) => {
+          if (o.isMesh) {
+            const m = o.material;
+            console.log('mat', m.name, 'metal', m.metalness, 'rough', m.roughness,
+              'map', !!m.map, m.map && m.map.colorSpace);
+          }
+        });
+        const c = box.getCenter(new THREE.Vector3());
+        controls.target.copy(c);
+        camera.lookAt(c);
+      }, undefined, (e) => console.error('load error', e));
+
+      addEventListener('resize', () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
+
+      renderer.setAnimationLoop(() => {
+        controls.update();
+        renderer.render(scene, camera);
+      });
+    </script>
+  </body>
+</html>

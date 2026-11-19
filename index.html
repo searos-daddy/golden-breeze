@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f6e7c1" />
+    <meta
+      name="description"
+      content="바람을 쫓는 발자국 - 황금빛 바람을 따라 달리는 감성 어드벤처"
+    />
+    <title>바람을 쫓는 발자국</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="./assets/index-BYTZaZKq.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/three-BMEvxM97.js">
+    <link rel="modulepreload" crossorigin href="./assets/rapier-BXLsaTga.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-Mc8RZ_TK.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene"></canvas>
+
+      <!-- ── 타이틀 ─────────────────────────────── -->
+      <section id="title" class="screen">
+        <div class="title-veil"></div>
+        <div class="title-inner">
+          <p class="kicker">FOLLOW THE GOLDEN BREEZE</p>
+          <h1>바람을 쫓는<br /><em>발자국</em></h1>
+          <span class="title-rule"></span>
+          <p class="lede">
+            주인의 체취가 황금빛 바람이 되어 길을 안내합니다.<br />
+            바람이 부는 쪽으로, 그저 달리면 됩니다.
+          </p>
+
+          <button id="start-btn" class="primary-btn">
+            <span>여정 시작</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="btn-icon">
+              <path
+                d="M5 12h13M13 6l6 6-6 6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          <div id="stage-select" class="stage-select hidden">
+            <span class="stage-select-label">여정 선택</span>
+            <div class="stage-buttons">
+              <button class="stage-btn" type="button" data-stage="1">
+                <b>1</b><span>아침</span>
+              </button>
+              <button class="stage-btn" type="button" data-stage="2">
+                <b>2</b><span>노을</span>
+              </button>
+              <button class="stage-btn" type="button" data-stage="3">
+                <b>3</b><span>밤</span>
+              </button>
+              <button class="stage-btn" type="button" data-stage="4">
+                <b>4</b><span>새벽</span>
+              </button>
+            </div>
+          </div>
+
+          <p class="keys">
+            <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동</span>
+            <span><kbd>SPACE</kbd> 점프</span>
+            <span><kbd>ESC</kbd> 일시정지</span>
+          </p>
+        </div>
+        <p class="title-foot">네 번의 계절을 지나, 빛의 문 너머로</p>
+      </section>
+
+      <!-- ── 로딩 ──────────────────────────────── -->
+      <section id="loading" class="screen hidden">
+        <div class="loading-inner">
+          <div class="spinner"></div>
+          <p id="loading-text">바람의 흔적을 더듬는 중…</p>
+        </div>
+      </section>
+
+      <!-- ── HUD ───────────────────────────────── -->
+      <div id="hud" class="hidden">
+        <div class="hud-top">
+          <div class="stage-chip">
+            <span class="stage-dot"></span>
+            <span id="stage-label">Stage 1</span>
+          </div>
+          <div class="hud-right">
+            <div class="memory-chip">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 3l2.4 5.6 6 .6-4.5 4 1.3 5.9L12 16l-5.2 3.1 1.3-5.9-4.5-4 6-.6z"
+                />
+              </svg>
+              <span id="memory-count">0</span><span class="of">/ 8</span>
+              <span class="memory-bar"><i id="memory-fill"></i></span>
+            </div>
+            <button
+              id="pause-btn"
+              class="icon-btn"
+              type="button"
+              aria-label="일시정지"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="7" y="5" width="3.4" height="14" rx="1.2" />
+                <rect x="13.6" y="5" width="3.4" height="14" rx="1.2" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="prompt" class="prompt hidden"></div>
+      </div>
+
+      <!-- 페이드 -->
+      <div id="fade"></div>
+
+      <!-- ── 일시정지 ───────────────────────────── -->
+      <section id="pause" class="screen hidden">
+        <div class="scrim"></div>
+        <div class="panel">
+          <p class="kicker">PAUSE</p>
+          <h2>잠시 쉬어가기</h2>
+          <p class="muted">바람은 기다려 줍니다.</p>
+
+          <div class="panel-actions">
+            <button id="resume-btn" class="primary-btn">계속 달리기</button>
+            <button id="restart-btn" class="ghost-btn">처음부터</button>
+          </div>
+
+          <div class="panel-settings">
+            <label class="toggle">
+              <input type="checkbox" id="motion-toggle" />
+              <span class="toggle-track"></span>
+              <span class="toggle-label">화면 흔들림 줄이기</span>
+            </label>
+            <label class="field">
+              <span class="field-label">화면 품질</span>
+              <select id="quality-select" class="select">
+                <option value="auto">자동</option>
+                <option value="high">고성능</option>
+                <option value="low">절전</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 클리어 / 엔딩 ──────────────────────── -->
+      <section id="clear" class="screen hidden">
+        <div class="scrim scrim-light"></div>
+        <div class="panel clear-panel">
+          <p class="kicker" id="clear-kicker">STAGE CLEAR</p>
+          <h2 id="clear-title">바람의 끝에<br />빛의 아치가 열렸습니다</h2>
+          <p class="lede" id="clear-detail"></p>
+          <div class="panel-actions">
+            <button id="again-btn" class="primary-btn">다시 달리기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 터치 조작 ──────────────────────────── -->
+      <div id="touch" class="hidden">
+        <div id="stick">
+          <span class="stick-ring"></span>
+          <div id="stick-knob"></div>
+        </div>
+        <button id="jump-btn" type="button" tabindex="-1" aria-label="점프">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <ellipse cx="12" cy="15.5" rx="4.6" ry="3.8" />
+            <ellipse cx="6.6" cy="9.6" rx="2.1" ry="2.6" />
+            <ellipse cx="17.4" cy="9.6" rx="2.1" ry="2.6" />
+            <ellipse cx="9.4" cy="6.6" rx="1.9" ry="2.4" />
+            <ellipse cx="14.6" cy="6.6" rx="1.9" ry="2.4" />
+          </svg>
+          <span>점프</span>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
